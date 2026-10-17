@@ -83,12 +83,25 @@ app.use((err, req, res, next) => {
     });
   }
 
-  console.error(err);
+ const errorStatus = err.status || err.statusCode;
 
-  return res.status(500).json({
-    success: false,
-    message: "Internal server error."
-  });
+const status =
+  Number.isInteger(errorStatus) &&
+  errorStatus >= 400 &&
+  errorStatus < 500
+    ? errorStatus
+    : 500;
+
+if (status >= 500) {
+  console.error(err);
+}
+
+return res.status(status).json({
+  success: false,
+  message:
+    status < 500
+      ? "Invalid request."
+      : "Internal server error."
 });
 
 if (require.main === module) {
